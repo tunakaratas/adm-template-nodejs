@@ -1,0 +1,58 @@
+// Admin Panel Template - Database Schema
+// SQLite with Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id               String   @id @default(cuid())
+  username         String   @unique
+  email            String   @unique
+  password         String
+  resetToken       String?  @unique
+  resetTokenExpiry DateTime?
+  createdAt        DateTime @default(now())
+  auditLogs        AuditLog[]
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String?
+  admin     Admin?   @relation(fields: [adminId], references: [id])
+  action    String   // CREATE, UPDATE, DELETE, LOGIN
+  entity    String   // Admin, Settings, etc.
+  entityId  String?
+  details   String?  // JSON string of changes
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id          String   @id @default(cuid())
+  siteTitle   String   @default("Admin Panel")
+  metaDesc    String?
+  email       String?
+  phone       String?
+  address     String?
+  github      String?
+  linkedin    String?
+  twitter     String?
+  instagram   String?
+  updatedAt   DateTime @updatedAt
+}
